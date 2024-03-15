@@ -3,23 +3,65 @@ This package contains the codebase for Tycho, the new tracking system in the IRI
 
 The following sections contain the instructions to download, build, configure and test the Tycho software. They correspond to the Quick Start guide from the [technical report](https://iridia.ulb.ac.be/IridiaTrSeries/link/IridiaTr2022-009.pdf), to which we refer for further usage and implementation details. We assume that the user has already installed an array of three gigabit ethernet (GigE) cameras connected to a server through a switch. We use Prosilica GC1600C cameras. Accordingly, the instructions in the forked `avt_vimba_camera` repository should be followed to install the corresponding Vimba SDK and ROS driver.
 
+## Camera verification
+To use your camera with ROS, you need to install the following libraries:
+
+This package provides a configurable ROS interface to the kernel API of the libv4l2 library, which implements a common driver for standard USB web cameras. 
+```
+sudo apt install ros-noetic-usb-cam
+```
+This package provides a simple viewer for ROS image topics.
+```
+sudo apt install ros-noetic-image-view
+```
+Now, run 'roscore' in a terminal.
+```
+roscore
+```
+In a new terminal, initialize the USB camera node.
+```
+rosrun usb_cam usb_cam_node
+```
+Verify the path of the camera topic for raw image by running: 
+```
+rostopic list
+```
+You should see a path like this: '/usb_cam/image_raw'. If it is different, change it in the following command.
+Finally, you should visualize the image on your screen.
+```
+rosrun image_view image_view image:=/usb_cam/image_raw
+```
+If you can visualize the image everything should be fine. 
+
 ## Installation
 The software has been developed and tested under Ubuntu Linux using the ROS Noetic distribution. To ensure that all dependencies are met, we recommend to install the `desktop_full` ROS metapackage. Additionally, install the `robot_localization` package by running
 ```
-sudo apt install ros-robot-localization
+sudo apt install ros-noetic-robot-localization
 ```
 in order to use state estimation through sensor fusion.
 
 To download and build the software, navigate to your catkin workspace and run
 ```
-cd src
-git clone --recurse-submodules https://github.com/demiurge-project/demiurge-tycho.git
+cd ~/catkin_ws/src
+git clone https://github.com/juanpabmedina/demiurge-tycho.git
 cd ..
 catkin_make
 ```
 
-## Configuration
-Before attempting to run Tycho for the first time, three components must be configured: the cameras, the `transformer` node and the `cropper` node.
+## Runing Tycho
+```
+source ~/catkin_ws/devel/setup.bash
+cd ~/catkin_ws/src/demiurge-tycho/tycho_launchers/launch
+roslaunch mono_camera.launch 
+```
+To visualize the tracking:
+```
+cd ~/catkin_ws/src/demiurge-tycho/tycho_launchers/config
+rosrun rviz rviz -d rviz_cameras.rviz
+```
+
+<!-- ## Configuration
+Before attempting to run Tycho for the first time, three components must be configured: the cameras, the `transformer` node and the `cropper` node. -->
 
 ### Cameras
 Each of the `tycho_launchers/launch/mono_camera_<i>.launch` files, where `<i>={0,1,2}`, need to be individually configured. For each camera, first set the `ip` and `guid` parameters to the corresponding values, which can be found by running Vimba Viewer, included in the Vimba SDK. Then, set each of the following parameters as instructed:
